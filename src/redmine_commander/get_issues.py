@@ -11,7 +11,6 @@ import requests
 import sys
 import os
 
-
 show = [
        "Redmine Commander!",
        "/issues mine                - show issues assigned to me",
@@ -22,7 +21,7 @@ show = [
 ]
 
 
-r=rofi.Rofi()
+r=rofi.Rofi(width=80)
 
 def req(base_url, key, r_type, *kwargs, cert=False):
     try:
