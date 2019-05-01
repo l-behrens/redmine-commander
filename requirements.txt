@@ -15,3 +15,5 @@
 # numpy==1.13.3
 # scipy==1.0
 
+python-rofi==1.0.1
+python-redmine==2.2.1
