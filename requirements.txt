@@ -17,3 +17,4 @@
 
 python-rofi==1.0.1
 python-redmine==2.2.1
+wheel==0.33.1

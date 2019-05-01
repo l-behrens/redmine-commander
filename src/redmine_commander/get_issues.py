@@ -16,8 +16,7 @@ show = [
        "Redmine Commander!",
        "/issues mine                - show issues assigned to me",
        "/issues all    \t            - show all issues",
-       "/projects mine             - show projects assigned to me",
-       "/projects all  \t            - show all projects",
+       "/projects      \t            - show all projects",
        "/time add      \t            - issue_id comment time_in_h",
        "/time show     \t            - issue_id"
 ]
@@ -46,6 +45,17 @@ def get_issues(j):
                project+='\t'
            t_id=issue["id"]
            tmp[index]=[t_id, 'I {:<6}\t{:<22}\t{:>10}'.format(t_id, project[:20], subject)]
+       return tmp
+
+def get_projects(j):
+       projects = sorted(j["projects"], key=lambda k: k['id'])
+       tmp={}
+       for index, project in enumerate(reversed(projects)):
+          name = project["name"]
+          p_id = str(project["id"])
+          if len(p_id) < 2:
+              p_id+='\t'
+          tmp[index]=[p_id, 'P {:<6}\t{:<22}'.format(p_id, name)]
        return tmp
 
 def print_projects(j):
@@ -96,6 +106,13 @@ def menu(base_url, apikey, cert, options):
             url = "%s/issues/%s" % (base_url, items[opt][0])
             prompt=options[opt][0]
             sub_menu(prompt, items, url)
+        elif opt is 3:
+            ret = req(base_url, apikey,  "projects.json", "status_id=open", "limit=500", cert=cert)
+            items=get_projects(json.loads(ret.text))
+            url = "%s/projects/%s" % (base_url, items[opt][0])
+            prompt=options[opt][0]
+            sub_menu(prompt, items, url)
+
         opt=-1
 
 def sub_menu(prompt, items, url):
@@ -125,7 +142,9 @@ def run():
 
     options={
         1: ["issues mine", get_issues],
-        2: ["issues all", get_issues]
+        2: ["issues all", get_issues],
+        3: ["projects all", get_issues],
+        5: ["time records", get_issues]
     }
 
     pre_checks(cert)

@@ -3,13 +3,19 @@ redmine-commander
 =================
 
 
-Add a short description here!
+Manage your Redmine tickets conveniently!
 
 
 Description
 ===========
 
-A longer description of your project goes here...
+Based on rofi, it gives you quick overview and full-text search over Ticket titles and numbers.
+
+Installation
+===========
+
+
+
 
 
 Note
