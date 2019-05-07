@@ -96,28 +96,29 @@ def menu(base_url, apikey, cert, options):
         elif opt is 1:
             ret = req(base_url, apikey, "issues.json", "assigned_to_id=me", "status_id=open", "limit=100", cert=cert)
             items=get_issues(json.loads(ret.text))
-            url = "%s/issues/%s" % (base_url, items[opt][0])
+            url = "%s/issues" % (base_url)
             prompt=options[opt][0]
             sub_menu(prompt, items, url)
         elif opt is 2:
             ret = req(base_url, apikey,  "issues.json", "status_id=open", "limit=500", cert=cert)
             items=get_issues(json.loads(ret.text))
-            url = "%s/issues/%s" % (base_url, items[opt][0])
+            url = "%s/issues" % (base_url)
             prompt=options[opt][0]
             sub_menu(prompt, items, url)
         elif opt is 3:
             ret = req(base_url, apikey,  "projects.json", "status_id=open", "limit=500", cert=cert)
             items=get_projects(json.loads(ret.text))
-            url = "%s/projects/%s" % (base_url, items[opt][0])
+            url = "%s/projects" % (base_url)
             prompt=options[opt][0]
             sub_menu(prompt, items, url)
 
         opt=-1
 
-def sub_menu(prompt, items, url):
+def sub_menu(prompt, items, base_url):
     quit=0
     while quit is not -1:
         opt, quit=r.select(prompt, [i[1] for i in items.values()])
+        url = "%s/%s" % (base_url, items[opt][0])
         if opt is -1:
             break
         webbrowser.open_new_tab(url)
