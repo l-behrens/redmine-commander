@@ -1,5 +1,6 @@
 PYTHON=python3
 PIP=pip3
+TAG=$(shell bash scripts/version_inc.sh)
 
 %.python_project:
 	@echo "new python project"
@@ -18,7 +19,13 @@ local:
 	        $(PYTHON) setup.py develop; \
 	)	
 
-dist:
+tag: 
+	@echo "tagging git to: $(TAG)"
+	-git commit -am "update" 
+	git tag -a $(TAG) -m "RELEASE $(TAG)" master
+
+
+dist: tag
 	$(PYTHON) -m pip install --user --upgrade setuptools wheel
 	$(PYTHON) setup.py bdist_wheel
 
