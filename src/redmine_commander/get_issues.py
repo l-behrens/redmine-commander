@@ -13,9 +13,9 @@ import os
 
 show = [
        "Redmine Commander!",
-       "/issues mine                - show issues assigned to me",
-       "/issues open    \t           - show open issues",
+       "/issues mine   \t            - show issues assigned to me",
        "/issues all    \t            - show all issues",
+       "/issues open   \t            - show open issues",
        "/projects      \t            - show all projects",
        "/time add      \t            - issue_id comment time_in_h",
        "/time show     \t            - issue_id"
@@ -101,7 +101,7 @@ def menu(base_url, apikey, cert, options):
             prompt=options[opt][0]
             sub_menu(prompt, items, url)
         elif opt is 2:
-            ret = req(base_url, apikey,  "issues.json", "status_id=open", "limit=500", cert=cert)
+            ret = req(base_url, apikey,  "issues.json", "status_id=*", "limit=500", cert=cert)
             items=get_issues(json.loads(ret.text))
             url = "%s/issues" % (base_url)
             prompt=options[opt][0]
