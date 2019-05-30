@@ -13,12 +13,12 @@ import os
 
 show = [
        "Redmine Commander!",
-       "/issues mine   \t            - show issues assigned to me",
-       "/issues all    \t            - show all issues",
-       "/issues open   \t            - show open issues",
-       "/projects      \t            - show all projects",
-       "/time add      \t            - issue_id comment time_in_h",
-       "/time show     \t            - issue_id"
+       "/issues mine               - show issues assigned to me",
+       "/issues all                - show all issues",
+       "/issues open               - show open issues",
+       "/projects                  - show all projects",
+       "/time add                  - issue_id comment time_in_h",
+       "/time show                 - issue_id"
 ]
 
 
