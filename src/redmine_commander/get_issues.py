@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 from pprint import pprint
 #from joblib import Parallel, delayed
+from subprocess import call
+from dateutil import parser
+from dateutil import relativedelta
+from datetime import datetime
 import rofi
 import argparse
 import webbrowser
@@ -10,12 +14,13 @@ import redminelib
 import requests
 import sys
 import os
+import time
+
 
 show = [
-       "Redmine Commander!",
-       "/issues mine   \t    - show issues assigned to me",
+       "/issues mine        - show issues assigned to me",
        "/issues all    \t    - show all issues",
-       "/issues open   \t    - show open issues",
+       "/issues open        - show open issues",
        "/projects      \t    - show all projects",
        "/time add      \t    - issue_id comment time_in_h",
        "/time show     \t    - issue_id"
@@ -35,23 +40,49 @@ def req(base_url, key, r_type, *kwargs, cert=False):
     except Exception as e:
         logging.log(logging.ERROR, "REST Call failed\n%s" %  e)
 
+def timedelta_to_int(t):
+    return int("{:04d}{:04d}{:04d}{:04d}{:04d}{:04d}{:04d}{:04d}".format(t.years,
+                                t.months,
+                                t.weeks,
+                                t.days,
+                                t.hours,
+                                t.minutes,
+                                t.seconds,
+                                t.microseconds))
+
 def get_issues(j):
        issues = sorted(j["issues"], key=lambda k: k['id'])
        tmp={}
        for index, issue in enumerate(reversed(issues)):
-           project=issue["project"]["name"]
-           subject=issue["subject"]
-           if len(project) < 20:
-               project+='\t'
+           updated_on=parser.parse(issue['updated_on']).replace(tzinfo=None)
+           now = datetime.now()
+           t_delta=relativedelta.relativedelta(now, updated_on)
+           t_int=timedelta_to_int(t_delta)
+           ago="weeks ago"
+           if (t_delta.weeks==0 and t_delta.months==0 and t_delta.years==0):
+               if (t_delta.days==0):
+                   if (t_delta.hours==0):
+                       ago="%s minutes ago" % t_delta.minutes
+                   else:
+                       ago="%s hours ago" % t_delta.hours
+               else:
+                   ago="%s days ago" % t_delta.days
+           print(issue)
+           project=issue["project"]["name"].lower()
+           subject=issue["subject"].lower()
            t_id=issue["id"]
-           tmp[index]=[t_id, 'I {:<6}\t{:<22}\t{:>10}'.format(t_id, project[:20], subject)]
+           tmp[t_int]=[t_id, '{:8s} {:30.25s} {:85.80s} {:>20s}'.format(
+               str(t_id).strip(),
+               str(project[:25]).strip().ljust(25),
+               str(subject[:80]).strip(),
+               ago)]
        return tmp
 
 def get_projects(j):
        projects = sorted(j["projects"], key=lambda k: k['id'])
        tmp={}
        for index, project in enumerate(reversed(projects)):
-          name = project["name"]
+          name = project["name"].lower()
           p_id = str(project["id"])
           if len(p_id) < 2:
               p_id+='\t'
@@ -83,37 +114,106 @@ def pre_checks(cert):
         logging.log(logging.ERROR, "missing key.pem file")
         sys.exit(1)
 
-def menu(base_url, apikey, cert, options):
+def comment_menu(t_id):
+    ret = req(base_url, apikey, "issues.json", "issue_id=%s" % t_id, cert=cert)
+    items=get_issues(json.loads(ret.text))
+    prompt="comments"
+    print(items)
+    opt, key=r.select(prompt,  items)
+
+def ticket_menu(items):
+    url = "%s/issues" % (base_url)
+    prompt="my tickets"
+
+    while True:
+        opt, key=r.select(prompt,  [items[i][1] for i in sorted(items.keys())],
+                           key1=('Alt+u', "scroll the comments"),
+                           key2=('Alt+i', "post a comment"),
+                           key3=('Alt+o', "open in browser"),
+                           key4=('Alt+p', "book working hours"),
+                       message="Ticket Options are:")
+
+        t_id=items[sorted(items)[opt]][0]
+        if key is -1:
+            return
+        if key==1:
+            comment_menu(t_id)
+            print("see the comments")
+        if key==2:
+            print("post a comment")
+        if key==3:
+            print("open in webbrowser")
+            url = "%s/issues/%s" % (base_url, t_id)
+            webbrowser.open_new_tab(url)
+        if key==4:
+            print("book working hours")
+
+
+
+def menu():
     opt=-1
     quit=0
     prompt="menu"
-    while opt is -1:
-        if quit is -1:
-            break
-        opt, quit=r.select(prompt, show)
+    while True:
+        opt, key=r.select(prompt=prompt, options=show,
+                          message="welcome to the redmine commander version: 1.0.4",
+                          key1=('Alt+u', "show my tickets"),
+                          key2=('Alt+i', "show all tickets"),
+                          key3=('Alt+o', "show my projects"),
+                          key4=('Alt+p', "show all projects"),
+                          key5=('Alt+r', "start/stop working time"),
+                          key6=('Alt+e', "make a comment"),
+                          key7=('Alt+w', "show my protocol"),
+                          key8=('Alt+q', "quit"),
+                          key9=('Alt+t', "switch theme")
+                          )
+        if key==-1:
+            sys.exit(0)
+        if key==1:
+            print('show all my')
+            ret = req(base_url, apikey, "issues.json", "assigned_to_id=me", "status_id=open", "limit=500", "sort=updated_on", cert=cert)
+            items=get_issues(json.loads(ret.text))
+            ticket_menu(items)
+        if key==2:
+            print('show all tickets')
+            ret = req(base_url, apikey,  "issues.json", "status_id=*", "limit=500", cert=cert)
+            items=get_issues(json.loads(ret.text))
+            ticket_menu(items)
+        if key==3:
+            print('show my projects')
+        if key==4:
+            print('show all projects')
+        if key==5:
+            print('start/stop working time')
+        if key==6:
+            print('make a comment')
+        if key==7:
+            print('show my protocol')
+            ret = req(base_url, apikey, "time_entries.json", "limit=500", "user_id=me", cert=cert)
+            items=json.loads(ret.text)
+            print(items)
+        if key==8:
+            print('bye...')
+            sys.exit(0)
+        if key==9:
+            call('rofi-theme-selector')
+
         if not opt in options.keys():
             opt=-1
             prompt="not implemented yet!"
         elif opt is 1:
-            ret = req(base_url, apikey, "issues.json", "assigned_to_id=me", "status_id=open", "limit=100", cert=cert)
+            ret = req(base_url, apikey, "issues.json", "assigned_to_id=me", "status_id=open", "limit=500", "sort=updated_on", cert=cert)
             items=get_issues(json.loads(ret.text))
             url = "%s/issues" % (base_url)
             prompt=options[opt][0]
             sub_menu(prompt, items, url)
         elif opt is 2:
-            ret = req(base_url, apikey,  "issues.json", "status_id=*", "limit=500", cert=cert)
+            ret = req(base_url, apikey,  "issues.json", "status_id=*", "limit=500", "sort=updated_on", cert=cert)
             items=get_issues(json.loads(ret.text))
             url = "%s/issues" % (base_url)
             prompt=options[opt][0]
             sub_menu(prompt, items, url)
         elif opt is 3:
-            ret = req(base_url, apikey,  "issues.json", "limit=500", cert=cert)
-            items=get_issues(json.loads(ret.text))
-            url = "%s/issues" % (base_url)
-            prompt=options[opt][0]
-            sub_menu(prompt, items, url)
-
-        elif opt is 4:
             ret = req(base_url, apikey,  "projects.json", "status_id=open", "limit=500", cert=cert)
             items=get_projects(json.loads(ret.text))
             url = "%s/projects" % (base_url)
@@ -125,7 +225,7 @@ def menu(base_url, apikey, cert, options):
 def sub_menu(prompt, items, base_url):
     quit=0
     while quit is not -1:
-        opt, quit=r.select(prompt, [i[1] for i in items.values()])
+        opt, quit=r.select(prompt,  [i[1] for i in items.values()], message="press Enter to open a ticket in your Browser")
         url = "%s/%s" % (base_url, items[opt][0])
         if opt is -1:
             break
@@ -142,11 +242,17 @@ def parse_args():
     return parser.parse_args()
 
 def run():
+    global cert
+    global apikey
+    global base_url
+    global options
+
     args=parse_args()
     cert_dir=args.cert_dir
     cert=(os.path.join(cert_dir, 'cert.crt'), os.path.join(cert_dir, 'key.pem'))
     base_url=args.url
     apikey=args.key
+
 
     options={
         1: ["issues mine", get_issues],
@@ -157,6 +263,6 @@ def run():
     }
 
     pre_checks(cert)
-    menu(base_url, apikey, cert, options)
+    menu()
 
 
