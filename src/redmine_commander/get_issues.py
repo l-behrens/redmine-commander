@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 from pprint import pprint
-#from joblib import Parallel, delayed
 from subprocess import call
 from dateutil import parser
 from dateutil import relativedelta
@@ -19,8 +18,8 @@ import time
 
 show = [
        "/issues mine        - show issues assigned to me",
-       "/issues all    \t    - show all issues",
-       "/issues open        - show open issues",
+       "/issues open  \t    - show all issues",
+       "/issues all         - show open issues",
        "/projects      \t    - show all projects",
        "/time add      \t    - issue_id comment time_in_h",
        "/time show     \t    - issue_id"
@@ -64,10 +63,10 @@ def get_issues(j):
                    if (t_delta.hours==0):
                        ago="%s minutes ago" % t_delta.minutes
                    else:
+                       print(updated_on)
                        ago="%s hours ago" % t_delta.hours
                else:
                    ago="%s days ago" % t_delta.days
-           print(issue)
            project=issue["project"]["name"].lower()
            subject=issue["subject"].lower()
            t_id=issue["id"]
@@ -158,8 +157,8 @@ def menu():
         opt, key=r.select(prompt=prompt, options=show,
                           message="welcome to the redmine commander version: 1.0.4",
                           key1=('Alt+u', "show my tickets"),
-                          key2=('Alt+i', "show all tickets"),
-                          key3=('Alt+o', "show my projects"),
+                          key2=('Alt+i', "show open tickets"),
+                          key3=('Alt+o', "show all tickets"),
                           key4=('Alt+p', "show all projects"),
                           key5=('Alt+r', "start/stop working time"),
                           key6=('Alt+e', "make a comment"),
@@ -171,16 +170,19 @@ def menu():
             sys.exit(0)
         if key==1:
             print('show all my')
-            ret = req(base_url, apikey, "issues.json", "assigned_to_id=me", "status_id=open", "limit=500", "sort=updated_on", cert=cert)
+            ret = req(base_url, apikey, "issues.json", "assigned_to_id=me", "status_id=open", "limit=5000", "sort=updated_on", cert=cert)
             items=get_issues(json.loads(ret.text))
             ticket_menu(items)
         if key==2:
-            print('show all tickets')
-            ret = req(base_url, apikey,  "issues.json", "status_id=*", "limit=500", cert=cert)
+            print('show all open tickets')
+            ret = req(base_url, apikey,  "issues.json", "status_id=open", "limit=5000", cert=cert)
             items=get_issues(json.loads(ret.text))
             ticket_menu(items)
         if key==3:
-            print('show my projects')
+            print('show all tickets')
+            ret = req(base_url, apikey,  "issues.json", "status_id=*", "limit=5000", cert=cert)
+            items=get_issues(json.loads(ret.text))
+            ticket_menu(items)
         if key==4:
             print('show all projects')
         if key==5:
@@ -198,27 +200,27 @@ def menu():
         if key==9:
             call('rofi-theme-selector')
 
-        if not opt in options.keys():
-            opt=-1
-            prompt="not implemented yet!"
-        elif opt is 1:
-            ret = req(base_url, apikey, "issues.json", "assigned_to_id=me", "status_id=open", "limit=500", "sort=updated_on", cert=cert)
-            items=get_issues(json.loads(ret.text))
-            url = "%s/issues" % (base_url)
-            prompt=options[opt][0]
-            sub_menu(prompt, items, url)
-        elif opt is 2:
-            ret = req(base_url, apikey,  "issues.json", "status_id=*", "limit=500", "sort=updated_on", cert=cert)
-            items=get_issues(json.loads(ret.text))
-            url = "%s/issues" % (base_url)
-            prompt=options[opt][0]
-            sub_menu(prompt, items, url)
-        elif opt is 3:
-            ret = req(base_url, apikey,  "projects.json", "status_id=open", "limit=500", cert=cert)
-            items=get_projects(json.loads(ret.text))
-            url = "%s/projects" % (base_url)
-            prompt=options[opt][0]
-            sub_menu(prompt, items, url)
+#        if not opt in options.keys():
+#            opt=-1
+#            prompt="not implemented yet!"
+#        elif opt is 1:
+#            ret = req(base_url, apikey, "issues.json", "assigned_to_id=me", "status_id=open", "limit=500", "sort=updated_on", cert=cert)
+#            items=get_issues(json.loads(ret.text))
+#            url = "%s/issues" % (base_url)
+#            prompt=options[opt][0]
+#            sub_menu(prompt, items, url)
+#        elif opt is 2:
+#            ret = req(base_url, apikey,  "issues.json", "status_id=*", "limit=500", "sort=updated_on", cert=cert)
+#            items=get_issues(json.loads(ret.text))
+#            url = "%s/issues" % (base_url)
+#            prompt=options[opt][0]
+#            sub_menu(prompt, items, url)
+#        elif opt is 3:
+#            ret = req(base_url, apikey,  "projects.json", "status_id=open", "limit=500", cert=cert)
+#            items=get_projects(json.loads(ret.text))
+#            url = "%s/projects" % (base_url)
+#            prompt=options[opt][0]
+#            sub_menu(prompt, items, url)
 
         opt=-1
 
