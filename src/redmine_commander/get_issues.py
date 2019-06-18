@@ -56,6 +56,7 @@ def get_issues(j):
            updated_on=parser.parse(issue['updated_on']).replace(tzinfo=None)
            now = datetime.now()
            t_delta=relativedelta.relativedelta(now, updated_on)
+           t_delta.hours-=2
            t_int=timedelta_to_int(t_delta)
            ago="weeks ago"
            if (t_delta.weeks==0 and t_delta.months==0 and t_delta.years==0):
