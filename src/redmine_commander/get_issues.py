@@ -53,10 +53,9 @@ def get_issues(j):
        issues = sorted(j["issues"], key=lambda k: k['id'])
        tmp={}
        for index, issue in enumerate(reversed(issues)):
-           updated_on=parser.parse(issue['updated_on']).replace(tzinfo=None)
+           updated_on=parser.parse(issue['updated_on']).replace(tzinfo=None) 
            now = datetime.now()
            t_delta=relativedelta.relativedelta(now, updated_on)
-           t_delta.hours-=2
            t_int=timedelta_to_int(t_delta)
            ago="weeks ago"
            if (t_delta.weeks==0 and t_delta.months==0 and t_delta.years==0):
@@ -64,7 +63,6 @@ def get_issues(j):
                    if (t_delta.hours==0):
                        ago="%s minutes ago" % t_delta.minutes
                    else:
-                       print(updated_on)
                        ago="%s hours ago" % t_delta.hours
                else:
                    ago="%s days ago" % t_delta.days
@@ -153,6 +151,17 @@ def ticket_menu(items):
             print("book working hours")
 
 
+def pager(base_url, key, r_type, *kwargs, cert=False):
+    c=0
+    while True:
+        c+=100
+        try:
+            kwargs+="offset=%s" % c
+            ret = req(base_url, apikey, *kwargs, cert=cert)
+            ret=req(url % 100)
+            yield ret
+        except Exception as e:
+            pass
 
 def menu():
     opt=-1
@@ -175,17 +184,32 @@ def menu():
             sys.exit(0)
         if key==1:
             print('show all my')
-            ret = req(base_url, apikey, "issues.json", "assigned_to_id=me", "status_id=open", "limit=5000", "sort=updated_on", cert=cert)
-            items=get_issues(json.loads(ret.text))
+            #ret = req(base_url, apikey, "issues.json", "assigned_to_id=me", "status_id=open", "limit=9000", "sort=updated_on", cert=cert)
+
+            items={}
+
+            print("pager")
+            for index, page in enumerate(pager(base_url, apikey, "issues.json", "assigned_to_id=me", "status_id=open", "offset=%s" % i, "limit=9000", "sort=updated_on", cert=cert)):
+                print("page %s" % index)
+                i = get_issues(json.loads(ret.text))
+                items={**items, **i}
+                if len(i)<100:
+                    break
             ticket_menu(items)
+
+
+#            while items.size == 100:
+#                c+=100
+#                ret = req(base_url, apikey, "issues.json", "assigned_to_id=me", "status_id=open", "offset=%s" % i, "limit=9000", "sort=updated_on", cert=cert)
+#                items=get_issues(json.loads(ret.text))
         if key==2:
             print('show all open tickets')
-            ret = req(base_url, apikey,  "issues.json", "status_id=open", "limit=5000", cert=cert)
+            ret = req(base_url, apikey,  "issues.json", "status_id=open", "limit=9000", cert=cert)
             items=get_issues(json.loads(ret.text))
             ticket_menu(items)
         if key==3:
             print('show all tickets')
-            ret = req(base_url, apikey,  "issues.json", "status_id=*", "limit=5000", cert=cert)
+            ret = req(base_url, apikey,  "issues.json", "status_id=*", "limit=9000", cert=cert)
             items=get_issues(json.loads(ret.text))
             ticket_menu(items)
         if key==4:
@@ -252,7 +276,7 @@ def run():
     global cert
     global apikey
     global base_url
-    global options
+#    global options
 
     args=parse_args()
     cert_dir=args.cert_dir
@@ -260,15 +284,15 @@ def run():
     base_url=args.url
     apikey=args.key
 
-
-    options={
-        1: ["issues mine", get_issues],
-        2: ["issues all", get_issues],
-        3: ["issues open", get_issues],
-        4: ["projects all", get_issues],
-        5: ["time records", get_issues]
-    }
-
+#
+#    options={
+#        1: ["issues mine", get_issues],
+#        2: ["issues all", get_issues],
+#        3: ["issues open", get_issues],
+#        4: ["projects all", get_issues],
+#        5: ["time records", get_issues]
+#    }
+#
     pre_checks(cert)
     menu()
 
