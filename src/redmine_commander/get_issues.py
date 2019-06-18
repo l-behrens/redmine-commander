@@ -69,15 +69,15 @@ def fetch_all_issues():
     return len(issues)
 
 
-def get_issues(j=''):
+def get_issues(j='', **kwargs):
        if not j:
            with shelve.open('/tmp/issues.db') as db:
                 issues = db['issues']
-#                for page in db['issues']:
-#                    issues.extend(page)
        else:
            issues = sorted(j["issues"], key=lambda k: k['id'])
        tmp={}
+       for key, value in kwargs.items():
+           issues=[issue for issue in issues if str(value) in str(issue)]
        for index, issue in enumerate(reversed(issues)):
            updated_on=parser.parse(issue['updated_on']).replace(tzinfo=None)
            now = datetime.now()
@@ -147,7 +147,7 @@ def comment_menu(t_id):
 
 def ticket_menu(items):
     url = "%s/issues" % (base_url)
-    prompt="my tickets"
+    prompt="tickets"
 
     while True:
         opt, key=r.select(prompt,  [items[i][1] for i in sorted(items.keys())],
@@ -208,15 +208,17 @@ def menu():
         if key==-1:
             sys.exit(0)
         if key==1:
-            print('show all my')
-            fltr=[ "assigned_to_id=me", "status_id=open", "limit=100", "sort=updated_on"]
-            items={}
 
-            for index, page in enumerate(pager(base_url, apikey, *fltr, cert=cert)):
-                i = get_issues(json.loads(page.text))
-                items={**items, **i}
-                if len(i)<100:
-                    break
+            items = get_issues(assined_to='Lars Behrens')
+#            print('show all my')
+#            fltr=[ "assigned_to_id=me", "status_id=open", "limit=100", "sort=updated_on"]
+#            items={}
+#
+#            for index, page in enumerate(pager(base_url, apikey, *fltr, cert=cert)):
+#                i = get_issues(json.loads(page.text))
+#                items={**items, **i}
+#                if len(i)<100:
+#                    break
             ticket_menu(items)
 
         if key==2:
@@ -232,14 +234,7 @@ def menu():
 
         if key==3:
             print('show all tickets')
-            fltr = [ "status_id=*", "limit=100" ]
 
-            items={}
-#            for index, page in enumerate(pager(base_url, apikey, *fltr, cert=cert)):
-#                i = get_issues(json.loads(page.text))
-#                items={**items, **i}
-#                if len(i)<100:
-#                    break
             items = get_issues()
             ticket_menu(items)
         if key==4:
