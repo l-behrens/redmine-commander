@@ -135,6 +135,10 @@ def ticket_menu(items):
         t_id=items[sorted(items)[opt]][0]
         if key is -1:
             return
+        if key is 0:
+            print("open in webbrowser")
+            url = "%s/issues/%s" % (base_url, t_id)
+            webbrowser.open_new_tab(url)
         if key==1:
             comment_menu(t_id)
             print("see the comments")
