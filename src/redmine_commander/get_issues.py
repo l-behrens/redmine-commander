@@ -242,10 +242,8 @@ def menu():
         if key==5:
             print('refresh')
             r.status('sure about that? Press any key to continue, ESC to abort')
-            r.close()
             tickets=fetch_all_issues()
             r.status('refreshing index done: %s in total! Any key to return' % tickets)
-            r.close()
         if key==6:
             print('make a comment')
         if key==7:
