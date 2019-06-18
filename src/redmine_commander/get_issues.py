@@ -4,6 +4,8 @@ from subprocess import call
 from dateutil import parser
 from dateutil import relativedelta
 from datetime import datetime
+import operator
+import shelve
 import rofi
 import argparse
 import webbrowser
@@ -14,6 +16,7 @@ import requests
 import sys
 import os
 import time
+import ast
 
 
 show = [
@@ -32,6 +35,7 @@ def req(base_url, key, r_type, *kwargs, cert=False):
     try:
         f_req = '&'.join(['key=%s' % key, *kwargs])
         f_req = os.path.join(base_url, "%s?%s" % (r_type,f_req))
+        print(f_req)
         if cert:
             return requests.get(f_req, cert=cert)
         else:
@@ -49,11 +53,33 @@ def timedelta_to_int(t):
                                 t.seconds,
                                 t.microseconds))
 
-def get_issues(j):
-       issues = sorted(j["issues"], key=lambda k: k['id'])
+def fetch_all_issues():
+    fltr = [ "status_id=*", "limit=100" ]
+
+    issues=[]
+    for index, page in enumerate(pager(base_url, apikey, *fltr, cert=cert)):
+        i = json.loads(page.text)['issues']
+        issues.extend(sorted(i, key=lambda k: k['id']))
+        if len(i)<100:
+            break
+
+    with shelve.open('/tmp/issues.db') as db:
+        db['issues'] = issues
+
+    return len(issues)
+
+
+def get_issues(j=''):
+       if not j:
+           with shelve.open('/tmp/issues.db') as db:
+                issues = db['issues']
+#                for page in db['issues']:
+#                    issues.extend(page)
+       else:
+           issues = sorted(j["issues"], key=lambda k: k['id'])
        tmp={}
        for index, issue in enumerate(reversed(issues)):
-           updated_on=parser.parse(issue['updated_on']).replace(tzinfo=None) 
+           updated_on=parser.parse(issue['updated_on']).replace(tzinfo=None)
            now = datetime.now()
            t_delta=relativedelta.relativedelta(now, updated_on)
            t_int=timedelta_to_int(t_delta)
@@ -151,16 +177,15 @@ def ticket_menu(items):
             print("book working hours")
 
 
-def pager(base_url, key, r_type, *kwargs, cert=False):
+def pager(r_type, *args, cert=False):
     c=0
     while True:
-        c+=100
         try:
-            kwargs+="offset=%s" % c
-            ret = req(base_url, apikey, *kwargs, cert=cert)
-            ret=req(url % 100)
+            ret = req(base_url, apikey, "issues.json", *args, 'offset=%s' % c, cert=cert)
             yield ret
+            c+=100
         except Exception as e:
+            print("paging error %s" % e)
             pass
 
 def menu():
@@ -174,7 +199,7 @@ def menu():
                           key2=('Alt+i', "show open tickets"),
                           key3=('Alt+o', "show all tickets"),
                           key4=('Alt+p', "show all projects"),
-                          key5=('Alt+r', "start/stop working time"),
+                          key5=('Alt+r', "refresh"),
                           key6=('Alt+e', "make a comment"),
                           key7=('Alt+w', "show my protocol"),
                           key8=('Alt+q', "quit"),
@@ -184,38 +209,48 @@ def menu():
             sys.exit(0)
         if key==1:
             print('show all my')
-            #ret = req(base_url, apikey, "issues.json", "assigned_to_id=me", "status_id=open", "limit=9000", "sort=updated_on", cert=cert)
-
+            fltr=[ "assigned_to_id=me", "status_id=open", "limit=100", "sort=updated_on"]
             items={}
 
-            print("pager")
-            for index, page in enumerate(pager(base_url, apikey, "issues.json", "assigned_to_id=me", "status_id=open", "offset=%s" % i, "limit=9000", "sort=updated_on", cert=cert)):
-                print("page %s" % index)
-                i = get_issues(json.loads(ret.text))
+            for index, page in enumerate(pager(base_url, apikey, *fltr, cert=cert)):
+                i = get_issues(json.loads(page.text))
                 items={**items, **i}
                 if len(i)<100:
                     break
             ticket_menu(items)
 
-
-#            while items.size == 100:
-#                c+=100
-#                ret = req(base_url, apikey, "issues.json", "assigned_to_id=me", "status_id=open", "offset=%s" % i, "limit=9000", "sort=updated_on", cert=cert)
-#                items=get_issues(json.loads(ret.text))
         if key==2:
-            print('show all open tickets')
-            ret = req(base_url, apikey,  "issues.json", "status_id=open", "limit=9000", cert=cert)
-            items=get_issues(json.loads(ret.text))
+            fltr = ["status_id=open", "limit=100"]
+
+            items={}
+            for index, page in enumerate(pager(base_url, apikey, *fltr, cert=cert)):
+                i = get_issues(json.loads(page.text))
+                items={**items, **i}
+                if len(i)<100:
+                    break
             ticket_menu(items)
+
         if key==3:
             print('show all tickets')
-            ret = req(base_url, apikey,  "issues.json", "status_id=*", "limit=9000", cert=cert)
-            items=get_issues(json.loads(ret.text))
+            fltr = [ "status_id=*", "limit=100" ]
+
+            items={}
+#            for index, page in enumerate(pager(base_url, apikey, *fltr, cert=cert)):
+#                i = get_issues(json.loads(page.text))
+#                items={**items, **i}
+#                if len(i)<100:
+#                    break
+            items = get_issues()
             ticket_menu(items)
         if key==4:
             print('show all projects')
         if key==5:
-            print('start/stop working time')
+            print('refresh')
+            r.status('sure about that? Press any key to continue, ESC to abort')
+            r.close()
+            tickets=fetch_all_issues()
+            r.status('refreshing index done: %s in total! Any key to return' % tickets)
+            r.close()
         if key==6:
             print('make a comment')
         if key==7:
@@ -228,29 +263,6 @@ def menu():
             sys.exit(0)
         if key==9:
             call('rofi-theme-selector')
-
-#        if not opt in options.keys():
-#            opt=-1
-#            prompt="not implemented yet!"
-#        elif opt is 1:
-#            ret = req(base_url, apikey, "issues.json", "assigned_to_id=me", "status_id=open", "limit=500", "sort=updated_on", cert=cert)
-#            items=get_issues(json.loads(ret.text))
-#            url = "%s/issues" % (base_url)
-#            prompt=options[opt][0]
-#            sub_menu(prompt, items, url)
-#        elif opt is 2:
-#            ret = req(base_url, apikey,  "issues.json", "status_id=*", "limit=500", "sort=updated_on", cert=cert)
-#            items=get_issues(json.loads(ret.text))
-#            url = "%s/issues" % (base_url)
-#            prompt=options[opt][0]
-#            sub_menu(prompt, items, url)
-#        elif opt is 3:
-#            ret = req(base_url, apikey,  "projects.json", "status_id=open", "limit=500", cert=cert)
-#            items=get_projects(json.loads(ret.text))
-#            url = "%s/projects" % (base_url)
-#            prompt=options[opt][0]
-#            sub_menu(prompt, items, url)
-
         opt=-1
 
 def sub_menu(prompt, items, base_url):
@@ -276,7 +288,6 @@ def run():
     global cert
     global apikey
     global base_url
-#    global options
 
     args=parse_args()
     cert_dir=args.cert_dir
@@ -284,16 +295,20 @@ def run():
     base_url=args.url
     apikey=args.key
 
-#
-#    options={
-#        1: ["issues mine", get_issues],
-#        2: ["issues all", get_issues],
-#        3: ["issues open", get_issues],
-#        4: ["projects all", get_issues],
-#        5: ["time records", get_issues]
-#    }
-#
     pre_checks(cert)
     menu()
 
+if __name__ == "__main__":
+    global cert
+    global apikey
+    global base_url
 
+    args=parse_args()
+    cert_dir=args.cert_dir
+    cert=(os.path.join(cert_dir, 'cert.crt'), os.path.join(cert_dir, 'key.pem'))
+    base_url=args.url
+    apikey=args.key
+
+    pre_checks(cert)
+#    fetch_all_issues()
+    run()
