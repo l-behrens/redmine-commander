@@ -294,7 +294,7 @@ def run():
         pre_checks(cert)
 
     base_url=args.url
-    base_url_sha224=hashlib.sha224(base_url)
+    base_url_sha224=hashlib.sha224(base_url.encode('utf-8'))
 
     f_src='/'.join(['tmp', base_url_sha224.hexdigest(), 'issues.db'])
     apikey=args.key
@@ -314,7 +314,7 @@ if __name__ == "__main__":
         cert=(os.path.join(cert_dir, 'cert.crt'), os.path.join(cert_dir, 'key.pem'))
         pre_checks(cert)
     base_url=args.url
-    base_url_sha224=hashlib.sha224(base_url)
+    base_url_sha224=hashlib.sha224(base_url.encode('utf-8'))
 
     f_src='/'.join(['tmp', base_url_sha224.hexdigest(), 'issues.db'])
 
