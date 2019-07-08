@@ -4,6 +4,7 @@ from subprocess import call
 from dateutil import parser
 from dateutil import relativedelta
 from datetime import datetime
+import hashlib
 import operator
 import shelve
 import rofi
@@ -293,7 +294,9 @@ def run():
         pre_checks(cert)
 
     base_url=args.url
-    f_src='/'.join(['tmp', str(base_url), 'issues.db'])
+    base_url_sha224=hashlib.sha224(base_url)
+
+    f_src='/'.join(['tmp', base_url_sha224.hexdigest(), 'issues.db'])
     apikey=args.key
     menu()
 
@@ -311,7 +314,10 @@ if __name__ == "__main__":
         cert=(os.path.join(cert_dir, 'cert.crt'), os.path.join(cert_dir, 'key.pem'))
         pre_checks(cert)
     base_url=args.url
-    f_src='/'.join(['tmp', str(base_url), 'issues.db'])
+    base_url_sha224=hashlib.sha224(base_url)
+
+    f_src='/'.join(['tmp', base_url_sha224.hexdigest(), 'issues.db'])
+
     apikey=args.key
 
 #    fetch_all_issues()
