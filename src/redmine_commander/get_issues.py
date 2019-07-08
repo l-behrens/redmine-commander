@@ -63,7 +63,7 @@ def fetch_all_issues():
         if len(i)<100:
             break
 
-    with shelve.open('/tmp/issues.db') as db:
+    with shelve.open(f_src) as db:
         db['issues'] = issues
 
     return len(issues)
@@ -71,7 +71,7 @@ def fetch_all_issues():
 
 def get_issues(j='', **kwargs):
        if not j:
-           with shelve.open('/tmp/issues.db') as db:
+           with shelve.open(f_src) as db:
                 issues = db['issues']
        else:
            issues = sorted(j["issues"], key=lambda k: k['id'])
@@ -282,6 +282,7 @@ def run():
     global cert
     global apikey
     global base_url
+    global f_src
 
     args=parse_args()
     if not args.cert_dir:
@@ -290,7 +291,9 @@ def run():
         cert_dir=args.cert_dir
         cert=(os.path.join(cert_dir, 'cert.crt'), os.path.join(cert_dir, 'key.pem'))
         pre_checks(cert)
+
     base_url=args.url
+    f_src=os.path.join('tmp', base_url, 'issues.db')
     apikey=args.key
     menu()
 
@@ -298,6 +301,7 @@ if __name__ == "__main__":
     global cert
     global apikey
     global base_url
+    global f_src
 
     args=parse_args()
     if not args.cert_dir:
@@ -307,6 +311,7 @@ if __name__ == "__main__":
         cert=(os.path.join(cert_dir, 'cert.crt'), os.path.join(cert_dir, 'key.pem'))
         pre_checks(cert)
     base_url=args.url
+    f_src=os.path.join('tmp', base_url, 'issues.db')
     apikey=args.key
 
 #    fetch_all_issues()
