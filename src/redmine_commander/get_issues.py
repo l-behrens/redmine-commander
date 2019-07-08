@@ -270,7 +270,7 @@ def sub_menu(prompt, items, base_url):
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Redmine Commander')
-    parser.add_argument('--cert_dir', '-c', type=str, action='store', required=True,
+    parser.add_argument('--cert_dir', '-c', type=str, action='store', required=False,
                         help='key.pem and cert.crt must be present in the directory')
     parser.add_argument('--url', '-u', type=str, action='store', required=True,
                         help='redmine base url, E.g. https://project.solutionstm.eu')
@@ -284,12 +284,14 @@ def run():
     global base_url
 
     args=parse_args()
-    cert_dir=args.cert_dir
-    cert=(os.path.join(cert_dir, 'cert.crt'), os.path.join(cert_dir, 'key.pem'))
+    if not args.cert_dir:
+        cert_dir=None
+    else:
+        cert_dir=args.cert_dir
+        cert=(os.path.join(cert_dir, 'cert.crt'), os.path.join(cert_dir, 'key.pem'))
+        pre_checks(cert)
     base_url=args.url
     apikey=args.key
-
-    pre_checks(cert)
     menu()
 
 if __name__ == "__main__":
