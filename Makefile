@@ -29,9 +29,9 @@ dist: tag
 	$(PYTHON) -m pip install --user --upgrade setuptools wheel
 	$(PYTHON) setup.py bdist_wheel
 
-install: dist
+install: 
 	@echo "package gets installed to \$HOME/.local/bin"
-	$(PIP) install --user . --no-warn-script-location
+	$(PIP) install . --no-warn-script-location
 
 
 .PHONY: dist local
