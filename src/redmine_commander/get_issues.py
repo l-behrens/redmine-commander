@@ -64,6 +64,7 @@ def fetch_all_issues():
         if len(i)<100:
             break
 
+    print(f_src)
     with shelve.open(f_src) as db:
         db['issues'] = issues
 
@@ -71,6 +72,7 @@ def fetch_all_issues():
 
 
 def get_issues(j='', **kwargs):
+       print(f_src)
        if not j:
            with shelve.open(f_src) as db:
                 issues = db['issues']
