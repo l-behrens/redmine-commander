@@ -285,7 +285,7 @@ def run():
 
     args=parse_args()
     if not args.cert_dir:
-        cert_dir=None
+        cert=None
     else:
         cert_dir=args.cert_dir
         cert=(os.path.join(cert_dir, 'cert.crt'), os.path.join(cert_dir, 'key.pem'))
@@ -301,7 +301,7 @@ if __name__ == "__main__":
 
     args=parse_args()
     if not args.cert_dir:
-        cert_dir=None
+        cert=None
     else:
         cert_dir=args.cert_dir
         cert=(os.path.join(cert_dir, 'cert.crt'), os.path.join(cert_dir, 'key.pem'))
