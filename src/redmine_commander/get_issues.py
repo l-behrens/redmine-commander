@@ -298,7 +298,7 @@ def run():
     base_url=args.url
     base_url_sha224=hashlib.sha224(base_url.encode('utf-8'))
 
-    f_src='/'.join(['tmp', base_url_sha224.hexdigest(), 'issues.db'])
+    f_src='/'.join(['/tmp', base_url_sha224.hexdigest(), 'issues.db'])
     apikey=args.key
     menu()
 
@@ -318,7 +318,7 @@ if __name__ == "__main__":
     base_url=args.url
     base_url_sha224=hashlib.sha224(base_url.encode('utf-8'))
 
-    f_src='/'.join(['tmp', base_url_sha224.hexdigest(), 'issues.db'])
+    f_src='/'.join(['/tmp', base_url_sha224.hexdigest(), 'issues.db'])
 
     apikey=args.key
 
