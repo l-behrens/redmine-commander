@@ -300,11 +300,14 @@ if __name__ == "__main__":
     global base_url
 
     args=parse_args()
-    cert_dir=args.cert_dir
-    cert=(os.path.join(cert_dir, 'cert.crt'), os.path.join(cert_dir, 'key.pem'))
+    if not args.cert_dir:
+        cert_dir=None
+    else:
+        cert_dir=args.cert_dir
+        cert=(os.path.join(cert_dir, 'cert.crt'), os.path.join(cert_dir, 'key.pem'))
+        pre_checks(cert)
     base_url=args.url
     apikey=args.key
 
-    pre_checks(cert)
 #    fetch_all_issues()
     run()
