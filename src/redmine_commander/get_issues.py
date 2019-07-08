@@ -293,7 +293,7 @@ def run():
         pre_checks(cert)
 
     base_url=args.url
-    f_src=os.path.join('tmp', base_url, 'issues.db')
+    f_src='/'.join(['tmp', str(base_url), 'issues.db'])
     apikey=args.key
     menu()
 
@@ -311,7 +311,7 @@ if __name__ == "__main__":
         cert=(os.path.join(cert_dir, 'cert.crt'), os.path.join(cert_dir, 'key.pem'))
         pre_checks(cert)
     base_url=args.url
-    f_src=os.path.join('tmp', base_url, 'issues.db')
+    f_src='/'.join(['tmp', str(base_url), 'issues.db'])
     apikey=args.key
 
 #    fetch_all_issues()
