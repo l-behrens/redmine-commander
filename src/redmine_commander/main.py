@@ -37,23 +37,23 @@ def parse_config(domain="main", view="default"):
     options=eval(v['view'][view])
     options=[options[i] for i in sorted(options.keys())]
     opts=[(key, opt[0]) for key, opt in v["options"].items()]
-    while True:
-        key,value=r.custom_select(v["prompt"],
-                                  [item[1] for item in options],
-                                  *opts,
-                                  message=v["message"])
-        if value==-1:
-            break
+    #while True:
+    key,value=r.custom_select(v["prompt"],
+                              [item[1] for item in options],
+                              *opts,
+                              message=v["message"])
+    if value==-1:
+        parse_config()
 
-        for i, o in enumerate(opts):
-            if int(value) == i+1:
-                t_id=""
-                try:
-                    t_id=[item[0] for item in options][key]
-                except:
-                    pass
-                print(o)
-                eval(v['options'][o[0]][1])
+    for i, o in enumerate(opts):
+        if int(value) == i+1:
+            t_id=""
+            try:
+                t_id=[item[0] for item in options][key]
+            except:
+                pass
+            print(o)
+            eval(v['options'][o[0]][1])
 
 def greeting():
     show = [

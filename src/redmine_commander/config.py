@@ -26,6 +26,7 @@ configmap={
     "issues": {
         "options": {
             "Alt+o": ("open in browser", "open_in_browser('%s/issues/%s', base_url, t_id)"),
+            "Alt+u": ("write a comment", "open_in_browser('%s/issues/%s#', base_url, t_id)"),
         },
         "prompt": "issues",
         "message": "list of issues",
@@ -78,7 +79,7 @@ configmap={
             "Alt+g": ("refresh projects", "fetch_all_projects(base_url, apikey, f_src, cert=cert)"),
             "Alt+e": ("settings", "parse_config(domain='settings')"),
             "Alt+w": ("show my protocol", "testfunc1()"),
-            "Alt+q": ("quit", "testfunc1()"),
+            "Alt+q": ("quit", "sys.exit(0)"),
             "Alt+t": ("time records", "parse_config(domain='time')")
         },
         "prompt": "main",

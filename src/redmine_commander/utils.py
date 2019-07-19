@@ -5,6 +5,9 @@ import json
 import os
 import webbrowser
 import requests
+from dateutil import parser
+from dateutil import relativedelta
+from datetime import datetime, date, timedelta
 
 def timedelta_to_int(t):
     return int("{:04d}{:04d}{:04d}{:04d}{:04d}{:04d}{:04d}{:04d}".format(t.years,
@@ -15,6 +18,14 @@ def timedelta_to_int(t):
                                 t.minutes,
                                 t.seconds,
                                 t.microseconds))
+
+def allsundays(year):
+    d = date(year, 1, 1)                    # January 1st
+    d += timedelta(days = 6 - d.weekday())  # First Sunday
+    while d.year == year:
+        yield d
+        d += timedelta(days = 7)
+
 
 def pager(base_url, apikey, *args, cert=False, what="issues.json"):
     c=0

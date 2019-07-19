@@ -64,8 +64,6 @@ def get_issues(f_src, j='', **kwargs):
        else:
            issues = sorted(j["issues"], key=lambda k: k['id'])
        tmp={}
-#       print("issues are")
-#       print([issue for issue in issues])
        for key, value in kwargs.items():
            issues=[issue for issue in issues if str(value) in str(issue[key])]
            print(issues)
@@ -113,14 +111,6 @@ def get_projects(f_src, j='', **kwargs):
               p_id+='\t'
           tmp[index]=[p_id, 'P {:<6}\t{:<22}'.format(p_id, name)]
        return tmp
-
-def allsundays(year):
-    """This code was provided in the previous answer! It's not mine!"""
-    d = date(year, 1, 1)                    # January 1st
-    d += timedelta(days = 6 - d.weekday())  # First Sunday
-    while d.year == year:
-        yield d
-        d += timedelta(days = 7)
 
 
 def get_time_entries(f_src, j='', interval='day', **kwargs):
