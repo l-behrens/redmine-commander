@@ -19,7 +19,7 @@ import os
 import time
 import ast
 
-r=custom_rofi.rofi_redmine(width=80)
+r=custom_rofi.rofi_redmine(width=90)
 conf_file='/'.join([
     os.getenv('HOME'),
     '.config',
