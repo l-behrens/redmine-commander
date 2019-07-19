@@ -19,7 +19,7 @@ import os
 import time
 import ast
 
-r=custom_rofi.rofi_redmine(width=90)
+r=custom_rofi.rofi_redmine(width=90, lines=30)
 conf_file='/'.join([
     os.getenv('HOME'),
     '.config',
@@ -42,8 +42,6 @@ def parse_config(domain="main", view="default"):
                               [item[1] for item in options],
                               *opts,
                               message=v["message"])
-    if value==-1:
-        parse_config()
 
     for i, o in enumerate(opts):
         if int(value) == i+1:
@@ -54,6 +52,14 @@ def parse_config(domain="main", view="default"):
                 pass
             print(o)
             eval(v['options'][o[0]][1])
+
+    if value==-1:
+        if domain is "main":
+            sys.exit(0)
+        else:
+            parse_config()
+    else:
+        parse_config(domain=domain, view=view)
 
 def greeting():
     show = [
