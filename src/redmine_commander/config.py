@@ -94,7 +94,7 @@ configmap={
             "Alt+c": ("confluence", "parse_config(domain='confluence')"),
             "Alt+e": ("settings", "parse_config(domain='settings')"),
             "Alt+w": ("show my protocol", "testfunc1()"),
-            "Alt+q": ("quit", "sys.exit(0)"),
+            "Alt+q": ("quit", "sys.exit(1)"),
             "Alt+t": ("time records", "parse_config(domain='time')")
         },
         "prompt": "main",

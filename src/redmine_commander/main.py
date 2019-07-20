@@ -34,7 +34,6 @@ conf_file='/'.join([
 # reads configmap and executes associated methods. 
 # this is a template parser for rofi program calls
 def parse_config(domain="main", view="default", t_id=None, on_prev="main"):
-    print("parsing")
     if not configmap[domain]:
         return
     v=configmap[domain]
@@ -48,20 +47,16 @@ def parse_config(domain="main", view="default", t_id=None, on_prev="main"):
 
     for i, o in enumerate(opts):
         if int(value) == i+1:
-            t_id=""
-            try:
-                t_id=[item[0] for item in options][key]
-                eval(v['options'][o[0]][1])
-            except:
-                pass
+            t_id=[item[0] for item in options][key]
+            eval(v['options'][o[0]][1])
 
     if value==-1:
         if domain is "main":
             sys.exit(0)
         else:
-            parse_config(domain=on_prev)
-    else:
-        parse_config(domain=domain, view=view)
+            parse_config(t_id=t_id, domain=on_prev)
+
+    parse_config(domain=domain, view=view, t_id=t_id, on_prev=on_prev)
 
 def greeting():
     show = [
