@@ -51,10 +51,9 @@ def parse_config(domain="main", view="default", t_id=None, on_prev="main"):
             t_id=""
             try:
                 t_id=[item[0] for item in options][key]
+                eval(v['options'][o[0]][1])
             except:
                 pass
-            print(o)
-            eval(v['options'][o[0]][1])
 
     if value==-1:
         if domain is "main":
