@@ -3,6 +3,10 @@ from pprint import pprint
 from subprocess import call
 from redmine_commander.redmine_data import *
 from redmine_commander.config import configmap
+from redmine_commander.confluence_data import fetch_confluence_documents
+from redmine_commander.confluence_data import get_confluence_documents
+from redmine_commander.confluence_data import preview_document
+from redmine_commander.confluence_data import confluence_open_in_browser
 import datetime
 import redmine_commander.data as data
 import redmine_commander.custom_rofi as custom_rofi
@@ -29,7 +33,7 @@ conf_file='/'.join([
 
 # reads configmap and executes associated methods. 
 # this is a template parser for rofi program calls
-def parse_config(domain="main", view="default"):
+def parse_config(domain="main", view="default", t_id=None, on_prev="main"):
     print("parsing")
     if not configmap[domain]:
         return
@@ -37,7 +41,6 @@ def parse_config(domain="main", view="default"):
     options=eval(v['view'][view])
     options=[options[i] for i in sorted(options.keys())]
     opts=[(key, opt[0]) for key, opt in v["options"].items()]
-    #while True:
     key,value=r.custom_select(v["prompt"],
                               [item[1] for item in options],
                               *opts,
@@ -57,7 +60,7 @@ def parse_config(domain="main", view="default"):
         if domain is "main":
             sys.exit(0)
         else:
-            parse_config()
+            parse_config(domain=on_prev)
     else:
         parse_config(domain=domain, view=view)
 
@@ -105,7 +108,6 @@ def run():
     base_url=config.get_base_url()
     f_src=config.get_fsrc()
 
-    #parse_config(domain="issues")
     parse_config(domain="main")
 
 if __name__ == "__main__":

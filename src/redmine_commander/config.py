@@ -68,7 +68,20 @@ configmap={
             "month": "get_time_entries(f_src, j='', interval='month')"
         }
     },
-
+    "confluence": {
+        "options": {
+            "Alt+o": ("open in browser", "confluence_open_in_browser(f_src, t_id)"),
+            "Alt+p": ("preview", "parse_config(domain='confluence', view='detail', t_id=t_id, on_prev='confluence')")
+        },
+        "prompt": "confluence",
+        "message": "praise the commander!",
+        "select": "None",
+        "view":  {
+            "default": "get_confluence_documents(f_src)",
+            "detail": "preview_document(f_src, t_id)",
+            "all": "get_issues()"
+        }
+    },
     "main": {
         "options": {
             "Alt+u": ("show my tickets", "parse_config(domain='issues', view='mine')"),
@@ -77,6 +90,8 @@ configmap={
             "Alt+p": ("show all projects", "parse_config(domain='projects', view='all')"),
             "Alt+r": ("refresh issues", "fetch_all_issues(base_url, apikey, f_src, cert=cert)"),
             "Alt+g": ("refresh projects", "fetch_all_projects(base_url, apikey, f_src, cert=cert)"),
+            "Alt+h": ("refresh confluence", "fetch_confluence_documents(f_src, cert=cert)"),
+            "Alt+c": ("confluence", "parse_config(domain='confluence')"),
             "Alt+e": ("settings", "parse_config(domain='settings')"),
             "Alt+w": ("show my protocol", "testfunc1()"),
             "Alt+q": ("quit", "sys.exit(0)"),
