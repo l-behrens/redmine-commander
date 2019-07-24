@@ -36,6 +36,7 @@ configmap={
         "options": {
             "Alt+o": ("open in browser", "open_in_browser('%s/issues/%s', base_url, t_id)"),
             "Alt+u": ("write a comment", "open_in_browser('%s/issues/%s#', base_url, t_id)"),
+            "Alt+r": ("refresh issues", "fetch_all_issues(base_url, apikey, f_src, cert=cert)"),
         },
         "prompt": "issues",
         "message": "list of issues",
@@ -50,6 +51,7 @@ configmap={
     "projects": {
         "options": {
             "Alt+o": ("open in browser", "open_in_browser('%s/projects/%s', base_url, t_id)"),
+            "Alt+r": ("refresh projects", "fetch_all_projects(base_url, apikey, f_src, cert=cert)"),
         },
         "prompt": "issues",
         "message": "list of projects",
@@ -66,6 +68,7 @@ configmap={
             "Alt+u": ("show today", "parse_config(domain='time', view='today')"),
             "Alt+i": ("show week", "parse_config(domain='time', view='week')"),
             "Alt+o": ("show month", "parse_config(domain='time', view='month')"),
+            "Alt+r": ("refresh", "fetch_all_time(base_url, apikey, f_src, cert=cert)")
         },
         "prompt": "time records",
         "message": "praise the commander!",
@@ -80,7 +83,8 @@ configmap={
     "confluence": {
         "options": {
             "Alt+o": ("open in browser", "confluence_open_in_browser(f_src, t_id)"),
-            "Alt+p": ("preview", "parse_config(domain='confluence', view='detail', t_id=t_id, on_prev='confluence')")
+            "Alt+p": ("preview", "parse_config(domain='confluence', view='detail', t_id=t_id, on_prev='confluence')"),
+            "Alt+r": ("refresh confluence", "fetch_confluence_documents(f_src, cert=cert, user=user, passw=passw)")
         },
         "prompt": "confluence",
         "message": "praise the commander!",

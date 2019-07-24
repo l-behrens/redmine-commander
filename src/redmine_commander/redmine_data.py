@@ -5,8 +5,10 @@ from dateutil import parser
 from dateutil import relativedelta
 from datetime import datetime, date, timedelta
 from pprint import pprint
+import rofi
 
 def fetch_all_issues(base_url, apikey, f_src, cert=None):
+    rofi.Rofi().status("downloading issues ... ")
     fltr = [ "status_id=*", "limit=100" ]
 
     issues=[]
@@ -21,9 +23,12 @@ def fetch_all_issues(base_url, apikey, f_src, cert=None):
     with shelve.open(f_src) as db:
         db['issues'] = issues
 
+
+    rofi.Rofi().status(" ... done!")
     return len(issues)
 
 def fetch_all_time(base_url, apikey, f_src, cert=None):
+    rofi.Rofi().status("downloading time entries ... ")
     fltr = ["from=2018-04-01", "to=2020-08-01", "limit=100"]
     time_entries=[]
     for index, page in enumerate(pager(base_url, apikey, *fltr, cert=cert, what="time_entries.json")):
@@ -37,10 +42,12 @@ def fetch_all_time(base_url, apikey, f_src, cert=None):
     with shelve.open(f_src) as db:
         db['time_entries'] = time_entries
 
+    rofi.Rofi().status(" ... done!")
     return len(time_entries)
 
 
 def fetch_all_projects(base_url, apikey, f_src, cert=None):
+    rofi.Rofi().status("downloading time entries ... ")
     fetch_all_time(base_url, apikey, f_src, cert=cert)
     fltr = [ "status_id=*", "limit=100" ]
     return
@@ -55,6 +62,7 @@ def fetch_all_projects(base_url, apikey, f_src, cert=None):
     with shelve.open(f_src) as db:
         db['projects'] = projects
 
+    rofi.Rofi().status(" ... done!")
     return len(projects)
 
 def get_issues(f_src, j='', **kwargs):
