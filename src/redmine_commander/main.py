@@ -3,6 +3,7 @@ from pprint import pprint
 from subprocess import call
 from redmine_commander.redmine_data import *
 from redmine_commander.config import configmap
+from redmine_commander.config import services
 from redmine_commander.confluence_data import fetch_confluence_documents
 from redmine_commander.confluence_data import get_confluence_documents
 from redmine_commander.confluence_data import preview_document
@@ -58,16 +59,12 @@ def parse_config(domain="main", view="default", t_id=None, on_prev="main"):
 
     parse_config(domain=domain, view=view, t_id=t_id, on_prev=on_prev)
 
+def openi_open_in_browser(tid):
+    webbrowser.open_new_tab(str(services[tid]))
+
+
 def greeting():
-    show = [
-           "/issues mine        - show issues assigned to me",
-           "/issues open  \t    - show all issues",
-           "/issues all         - show open issues",
-           "/projects      \t    - show all projects",
-           "/time add      \t    - issue_id comment time_in_h",
-           "/time show     \t    - issue_id"
-    ]
-    return {k:(1,v) for k,v in enumerate(show)}
+    return {k:(k,v) for k,v in enumerate(services)}
 
 def pre_checks(cert):
     if not os.path.isfile(cert[0]):
@@ -86,6 +83,12 @@ def parse_args():
                         help='redmine base url, E.g. https://project.solutionstm.eu')
     parser.add_argument('--key', '-k', type=str, action='store', required=True,
                         help='api secret key')
+    parser.add_argument('--ldapuser', '-l', type=str, action='store', required=True,
+                        help='ldap user name')
+    parser.add_argument('--ldappass', '-p', type=str, action='store', required=True,
+                        help='ldap password')
+
+
     return parser.parse_args()
 
 def run():
@@ -94,9 +97,13 @@ def run():
     global apikey
     global base_url
     global f_src
+    global user
+    global passw
 
     args=parse_args()
-    config=configurator(args.url, args.key, cert_dir=args.cert_dir)
+    config=configurator(args.url, args.key, cert_dir=args.cert_dir, user=args.ldapuser, passw=args.ldappass)
+    user=config.get_user()
+    passw=config.get_passw()
     cert=config.get_cert()
     apikey=config.get_apikey()
     base_url=config.get_base_url()

@@ -32,7 +32,9 @@ def pager(base_url, apikey, *args, cert=False, what="issues.json"):
 #    if what is "time_entries.json":
     while True:
         try:
+            print(cert)
             ret = req(base_url, apikey, what, *args, 'offset=%s' % c, cert=cert)
+            print(ret)
             yield ret
             c+=100
         except Exception as e:

@@ -10,6 +10,7 @@ def fetch_all_issues(base_url, apikey, f_src, cert=None):
     fltr = [ "status_id=*", "limit=100" ]
 
     issues=[]
+    print(cert)
     for index, page in enumerate(pager(base_url, apikey, *fltr, cert=cert)):
         print(cert)
         i = json.loads(page.text)['issues']

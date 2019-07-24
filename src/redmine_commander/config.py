@@ -4,6 +4,15 @@ import hashlib
 import shelve
 import datetime
 
+global services
+services = [
+           "https://gitlab.openinfrastructure.de",
+           "https://project.openinfrastructure.de",
+           "https://confluence.openinfrastructure.de",
+           "https://webmail.openinfrastructure.de",
+           "https://app.wire.com"
+    ]
+
 global configmap
 # template for rofi calls
 configmap={
@@ -84,13 +93,14 @@ configmap={
     },
     "main": {
         "options": {
+            "Alt+x": ("open in browser", "openi_open_in_browser(t_id)"),
             "Alt+u": ("show my tickets", "parse_config(domain='issues', view='mine')"),
             "Alt+i": ("show open tickets", "parse_config(domain='issues', view='open')"),
             "Alt+o": ("show all tickets", "parse_config(domain='issues', view='all')"),
             "Alt+p": ("show all projects", "parse_config(domain='projects', view='all')"),
             "Alt+r": ("refresh issues", "fetch_all_issues(base_url, apikey, f_src, cert=cert)"),
             "Alt+g": ("refresh projects", "fetch_all_projects(base_url, apikey, f_src, cert=cert)"),
-            "Alt+h": ("refresh confluence", "fetch_confluence_documents(f_src, cert=cert)"),
+            "Alt+h": ("refresh confluence", "fetch_confluence_documents(f_src, cert=cert, user=user, passw=passw)"),
             "Alt+c": ("confluence", "parse_config(domain='confluence')"),
             "Alt+e": ("settings", "parse_config(domain='settings')"),
             "Alt+w": ("show my protocol", "testfunc1()"),
@@ -114,12 +124,14 @@ class configurator():
     # init internal state variables here
     __register = {}
 
-    def __init__(self, base_url=None, apikey=None, cert_dir=None):
+    def __init__(self, base_url=None, apikey=None, cert_dir=None, user=None, passw=None):
         self.__dict__ = self.__shared_state
         if not self.__register:
             self._init_default_register()
         self._base_url=base_url
         self._apikey=apikey
+        self._user=user
+        self._passw=passw
         self._cert_dir=cert_dir
         self.build()
         pass
@@ -139,6 +151,12 @@ class configurator():
 
     def get_fsrc(self):
         return self._f_src
+
+    def get_passw(self):
+        return self._passw
+
+    def get_user(self):
+        return self._user
 
     def get_base_url(self):
         return self._base_url
